@@ -1,4 +1,3 @@
-
 import flet as ft
 import requests
 from datetime import datetime, timedelta
@@ -19,41 +18,174 @@ def main(page: ft.Page):
     page.window_width = 400
     page.window_height = 700
 
+    form_options = ["Очная форма"]
+    course_options = ["1 курс", "2 курс", "3 курс", "4 курс"]
+
     group_id_map = {
-        "Группа 1": 26616,
-        "Группа 2": 26617,
-        "Группа 3": 26618
+        "Очная форма 1 курс": {
+            "БД-101": 26616,
+            "БД-102": 26617,
+            "ИД-101": 26618,
+            "ИСПД-101": 26619,
+            "ИСПД-102": 26620,
+            "ИСПД-103": 26621,
+            "МД-101": 26622,
+            "РД-101": 26623,
+            "РД-102": 26624,
+            "РСОД-101": 26625,
+            "УПД-101": 26626,
+            "ЭБД-101": 26627,
+            "ЭБД-102": 26628,
+            "ЭД-101": 26629,
+            "ЮД-101": 26630
+        },
+        "Очная форма 2 курс": {
+            "БД-201": 26631,
+            "БД-202": 26632,
+            "ИД-201": 26633,
+            "ИСПД-201": 26634,
+            "ИСПД-202": 26635,
+            "ИСПД-203": 26636,
+            "МД-201": 26637,
+            "РД-201": 26638,
+            "РД-202": 26639,
+            "РСОД-201": 26640,
+            "УПД-201": 26641,
+            "ЭБД-201": 26642,
+            "ЭБД-202": 26643,
+            "ЭД-201": 26644,
+            "ЮД-201": 26645
+        },
+        "Очная форма 3 курс": {
+            "БД-301": 26646,
+            "БД-302": 26647,
+            "ИД-301": 26648,
+            "ИСПД-301": 26649,
+            "ИСПД-302": 26650,
+            "ИСПД-303": 26651,
+            "МД-301": 26652,
+            "РД-301": 26653,
+            "РД-302": 26654,
+            "РСОД-301": 26655,
+            "УПД-301": 26656,
+            "ЭБД-301": 26657,
+            "ЭБД-302": 26658,
+            "ЭД-301": 26659,
+            "ЮД-301": 26660
+        },
+        "Очная форма 4 курс": {
+            "БД-401": 26661,
+            "БД-402": 26662,
+            "ИД-401": 26663,
+            "ИСПД-401": 26664,
+            "ИСПД-402": 26665,
+            "ИСПД-403": 26666,
+            "МД-401": 26667,
+            "РД-401": 26668,
+            "РД-402": 26669,
+            "РСОД-401": 26670,
+            "УПД-401": 26671,
+            "ЭБД-401": 26672,
+            "ЭБД-402": 26673,
+            "ЭД-401": 26674,
+            "ЮД-401": 26675
+        }
     }
 
-    selected_group = page.client_storage.get("group")
+    selected_form = None
+    selected_course = None
+    selected_group = None
     notes = page.client_storage.get("notes") or []
 
-    def init_group_selection():
-        def save_group(e):
-            chosen_group = group_dropdown.value
-            if chosen_group:
-                page.client_storage.set("group", chosen_group)
-                page.dialog.open = False
-                page.update()
-                init_main_ui()
-        group_dropdown = ft.Dropdown(
-            label="Выберите вашу группу",
-            options=[ft.dropdown.Option(g) for g in group_id_map.keys()]
+    def init_first_step():
+        def select_form(e):
+            global selected_form
+            selected_form = form_dropdown.value
+            form_alert_dialog.open = False
+            page.update()
+            init_second_step()
+
+        form_dropdown = ft.Dropdown(
+            label="Форма обучения",
+            options=[ft.dropdown.Option(form) for form in form_options],
         )
-        alert_dialog = ft.AlertDialog(
-            title=ft.Text("Выбор группы"),
-            content=group_dropdown,
-            actions=[ft.TextButton("OK", on_click=save_group)],
+
+        form_alert_dialog = ft.AlertDialog(
+            title=ft.Text("Шаг 1: Выберите форму обучения"),
+            content=form_dropdown,
+            actions=[ft.TextButton("Продолжить", on_click=select_form)],
             open=True
         )
-        page.dialog = alert_dialog
-        page.controls.append(alert_dialog)
+
+        page.dialog = form_alert_dialog
+        page.controls.append(form_alert_dialog)
         page.update()
 
+    def init_second_step():
+        def select_course(e):
+            global selected_course
+            selected_course = course_dropdown.value
+            course_alert_dialog.open = False
+            page.update()
+            init_third_step()
+
+        course_dropdown = ft.Dropdown(
+            label="Выберите курс",
+            options=[ft.dropdown.Option(course) for course in course_options],
+        )
+
+        course_alert_dialog = ft.AlertDialog(
+            title=ft.Text("Шаг 2: Выберите курс"),
+            content=course_dropdown,
+            actions=[ft.TextButton("Продолжить", on_click=select_course)],
+            open=True
+        )
+
+        page.dialog = course_alert_dialog
+        page.controls.append(course_alert_dialog)
+        page.update()
+
+    def init_third_step():
+        def select_group(e):
+            global selected_group
+            selected_group = group_dropdown.value
+            group_alert_dialog.open = False
+            page.update()
+            init_main_ui()
+
+        # Получаем группы для выбранного курса
+        full_groups = group_id_map[f"{selected_form} {selected_course}"]
+
+        group_dropdown = ft.Dropdown(
+            label="Выберите группу",
+            options=[ft.dropdown.Option(group) for group in full_groups.keys()],
+        )
+
+        group_alert_dialog = ft.AlertDialog(
+            title=ft.Text("Шаг 3: Выберите группу"),
+            content=group_dropdown,
+            actions=[ft.TextButton("Готово", on_click=select_group)],
+            open=True
+        )
+
+        page.dialog = group_alert_dialog
+        page.controls.append(group_alert_dialog)
+        page.update()  
+
     def init_main_ui():
+        slider_initialized = False  # Инициализируем её значением False
         current_group = page.client_storage.get("group")
         group_id = group_id_map.get(current_group)
         schedule_data = fetch_schedule(group_id)
+        view_mode_dropdown= ft.Dropdown(
+            label="Режим просмотра",
+            options=[
+                ft.dropdown.Option("Неделя"),
+                ft.dropdown.Option("Месяц"),
+                ft.dropdown.Option("Все")
+                ],
+                value="Неделя"
+            )
 
         if not schedule_data or "Month" not in schedule_data:
             page.controls.append(ft.Text("Не удалось загрузить расписание. Попробуйте позже."))
@@ -78,39 +210,105 @@ def main(page: ft.Page):
                             return day_date.strftime("%d.%m.%Y")
             return None
 
+        def get_next_lesson_date():
+            today = datetime.now()
+            all_days = [day for month in schedule_data["Month"] for day in month["Sched"]]
+            all_days.sort(key=lambda d: datetime.strptime(d["datePair"], "%d.%m.%Y"))
+            for day in all_days:
+                day_date = datetime.strptime(day["datePair"], "%d.%m.%Y")
+                if day_date > today:
+                    return day_date.strftime("%d.%m.%Y")
+            return None
+
         def show_notes_view():
             nonlocal notes
+
+            validity_dropdown = ft.Dropdown(
+                label="Актуально до",
+                options=[
+                    ft.dropdown.Option("До следующей практики"),
+                    ft.dropdown.Option("До следующего занятия")
+                ],
+                value="До следующей практики"
+            )
+
+            note_input = ft.TextField(label="Введите заметку")
+            subject_dropdown = ft.Dropdown(
+                label="Выберите предмет",
+                options=[ft.dropdown.Option(subject) for subject in sorted(all_subjects)]
+            )
+
+            notes_list = ft.Column()
 
             def add_note(e):
                 subject = subject_dropdown.value
                 note_text = note_input.value
+                validity_type = validity_dropdown.value
+
                 if subject and note_text:
-                    validity_type = validity_dropdown.value
-                    
+                    if validity_type == "До следующей практики":
+                        valid_until = get_next_practice_date(subject)
+                    else:
+                        valid_until = get_next_lesson_date()
+
+                    note = {
+                        "subject": subject,
+                        "text": note_text,
+                        "valid_until": valid_until,
+                        "validity_type": validity_type  # сохраняем тип
+                    }
+                    notes.append(note)
+                    page.client_storage.set("notes", notes)
+                    update_notes_list()
+                    note_input.value = ""
+                    page.update()
+
             def delete_note(note):
                 notes.remove(note)
                 page.client_storage.set("notes", notes)
                 update_notes_list()
 
             def change_validity(note):
-                def save_new_date(e):
-                    new_date = dp.value
-                    if new_date:
-                        note["valid_until"] = new_date.strftime("%d.%m.%Y")
-                        page.client_storage.set("notes", notes)
-                        update_notes_list()
-                        page.update()
+                subject = note["subject"]
+                validity_type = note.get("validity_type", "До следующего занятия")
+                previous_valid_until = note.get("valid_until")  # Получаем предыдущую дату актуальности
 
-                dp = ft.DatePicker()
-                dp.on_change = save_new_date
-                page.dialog = ft.AlertDialog(
-                    title=ft.Text("Выберите новую дату актуальности"),
-                    content=dp,
-                    actions=[ft.TextButton("OK", on_click=lambda _: page.dialog.close())]
+                print(f"Предмет: {subject}, Тип актуальности: {validity_type}, Предыдущая дата: {previous_valid_until}")
+
+                # Находим ближайшие дату занятия или практики ПОСЛЕ предыдущего установленного срока
+                if validity_type == "До следующей практики":
+                    new_date = find_next_practice_after(subject, previous_valid_until)
+                else:
+                    new_date = find_next_lesson_after(subject, previous_valid_until)
+
+                if new_date:
+                    print(f"Новая дата актуальности: {new_date}")
+                    note["valid_until"] = new_date
+                    page.client_storage.set("notes", notes)
+                    update_notes_list()
+                    page.update()
+                else:
+                    print("Не удалось найти следующую практику или занятие.")
+                    page.snack_bar = ft.SnackBar(ft.Text("Не удалось найти следующее занятие."))
+                    page.snack_bar.open = True
+                    page.update()
+
+            def find_next_lesson_after(subject, after_date):
+                """Находит ближайшее занятие после указанной даты."""
+                parsed_after_date = datetime.strptime(after_date, "%d.%m.%Y") if after_date else datetime.min
+                filtered_lessons = (
+                    lesson
+                    for month in schedule_data["Month"]
+                    for day in month["Sched"]
+                    for lesson in day["mainSchedule"]
+                    if lesson["SubjName"] == subject and datetime.strptime(day.get("datePair", ""), "%d.%m.%Y") >= parsed_after_date
                 )
-                page.dialog.open = True  # Открываем диалог для выбора даты
-                page.update() 
+                next_lesson = next(filtered_lessons, None)
+                return next_lesson.get("datePair") if next_lesson else None
 
+            
+
+            
             def update_notes_list():
                 notes_list.controls.clear()
                 if not notes:
@@ -131,35 +329,20 @@ def main(page: ft.Page):
                         )
                 page.update()
 
-            note_input = ft.TextField(label="Введите заметку")
-            subject_dropdown = ft.Dropdown(
-                label="Выберите предмет",
-                options=[ft.dropdown.Option(subject) for subject in sorted(all_subjects)]
-            )
-            notes_list = ft.Column()
             update_notes_list()
             return ft.Column([
                 ft.Text("Ваши домашние задания", size=18, weight="bold"),
                 subject_dropdown,
+                validity_dropdown,
                 note_input,
                 ft.ElevatedButton("Создать", on_click=add_note),
                 notes_list
             ])
 
         def show_schedule_view():
-            slider_initialized = False
-            view_mode_dropdown = ft.Dropdown(
-                label="Вид расписания",
-                options=[
-                    ft.dropdown.Option("Неделя"),
-                    ft.dropdown.Option("Месяц"),
-                    ft.dropdown.Option("Все")
-                ],
-                value="Неделя"
-            )
             slider = ft.Slider(min=0, max=0, value=0, divisions=1, visible=False)
             schedule_column = ft.Column(scroll=ft.ScrollMode.AUTO)
-
+            
             offset_index = ft.Text("0")
 
             def update_schedule_view(e=None):
@@ -174,7 +357,7 @@ def main(page: ft.Page):
                     start_of_week = today - timedelta(days=today.weekday())
                     end_of_week = start_of_week + timedelta(days=6)
                     displayed_days = [day for day in all_days 
-                                      if start_of_week <= datetime.strptime(day["datePair"], "%d.%m.%Y") <= end_of_week]
+                                     if start_of_week <= datetime.strptime(day["datePair"], "%d.%m.%Y") <= end_of_week]
                     slider.visible = False
                 elif mode == "Месяц":
                     now = datetime.now()
@@ -185,7 +368,7 @@ def main(page: ft.Page):
                         next_month = datetime(now.year, now.month + 1, 1)
                         last_day = next_month - timedelta(days=1)
                     displayed_days = [day for day in all_days 
-                                      if first_day <= datetime.strptime(day["datePair"], "%d.%m.%Y") <= last_day]
+                                     if first_day <= datetime.strptime(day["datePair"], "%d.%m.%Y") <= last_day]
                     slider.visible = True
                 elif mode == "Все":
                     displayed_days = all_days
@@ -205,7 +388,7 @@ def main(page: ft.Page):
                             slider.value = max(0, min(i, len(displayed_days) - 7))
                             break
                     slider_initialized = True
-                
+                    
                 start_index = int(slider.value)
                 offset_index.value = f"Страница: {start_index + 1}"
                 chunk = displayed_days[start_index:start_index+7] if len(displayed_days) > 7 else displayed_days
@@ -294,7 +477,7 @@ def main(page: ft.Page):
         page.update()
 
     if selected_group is None:
-        init_group_selection()
+        def init_first_step():
     else:
         init_main_ui()
 

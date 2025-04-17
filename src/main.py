@@ -23,21 +23,21 @@ def main(page: ft.Page):
 
     group_id_map = {
         "Очная форма 1 курс": {
-            "БД-101": 26616,
-            "БД-102": 26617,
-            "ИД-101": 26618,
-            "ИСПД-101": 26619,
-            "ИСПД-102": 26620,
-            "ИСПД-103": 26621,
-            "МД-101": 26622,
-            "РД-101": 26623,
-            "РД-102": 26624,
-            "РСОД-101": 26625,
-            "УПД-101": 26626,
-            "ЭБД-101": 26627,
-            "ЭБД-102": 26628,
-            "ЭД-101": 26629,
-            "ЮД-101": 26630
+            "БД-101": 26627,
+            "БД-102": 26640,
+            "ИД-101": 26616,
+            "ИСПД-101": 26628,
+            "ИСПД-102": 26629,
+            "ИСПД-103": 26639,
+            "МД-101": 26615,
+            "РД-101": 26630,
+            "РД-102": 26606,
+            "РСОД-101": 26617,
+            "УПД-101": 26618,
+            "ЭБД-101": 26626,
+            "ЭБД-102": 26807,
+            "ЭД-101": 26619,
+            "ЮД-101": 26785
         },
         "Очная форма 2 курс": {
             "БД-201": 26631,
@@ -174,7 +174,7 @@ def main(page: ft.Page):
 
     def init_main_ui():
         slider_initialized = False  # Инициализируем её значением False
-        current_group = page.client_storage.get("group")
+        current_group = page.client_storage.set("group", f"{selected_form} {selected_course}::{selected_group}")
         group_id = group_id_map.get(current_group)
         schedule_data = fetch_schedule(group_id)
         view_mode_dropdown= ft.Dropdown(
@@ -301,7 +301,7 @@ def main(page: ft.Page):
                     for month in schedule_data["Month"]
                     for day in month["Sched"]
                     for lesson in day["mainSchedule"]
-                    if lesson["SubjName"] == subject and datetime.strptime(day.get("datePair", ""), "%d.%m.%Y") >= parsed_after_date
+                    if lesson["SubjName"] == subject and datetime.strptime(day.get("datePair", ""), "%d.%m.%Y") > parsed_after_date
                 )
                 next_lesson = next(filtered_lessons, None)
                 return next_lesson.get("datePair") if next_lesson else None
@@ -398,6 +398,7 @@ def main(page: ft.Page):
                 tomorrow_date = now_date + timedelta(days=1)
                 slider.on_change = lambda e: update_schedule_view()
 
+
                 def get_lesson_status(lesson, day_date):
                     lesson_start = datetime.combine(day_date, datetime.strptime(lesson["TimeStart"], "%H:%M").time())
                     lesson_end = lesson_start + timedelta(minutes=95)
@@ -477,7 +478,7 @@ def main(page: ft.Page):
         page.update()
 
     if selected_group is None:
-        def init_first_step():
+        init_first_step()
     else:
         init_main_ui()
 
